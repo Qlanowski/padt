@@ -1,0 +1,4 @@
+venv
+swiadomezakupy/chromedriver.exe
+.vscode
+__pycache__
