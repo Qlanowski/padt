@@ -16,7 +16,7 @@ NEWSPIDER_MODULE = 'grocery_scraper.spiders'
 LOG_LEVEL = 'ERROR'
 
 USER_AGENT= 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36'
-
+FEED_EXPORT_ENCODING = 'utf-8'
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'grocery_scraper (+http://www.yourdomain.com)'
 

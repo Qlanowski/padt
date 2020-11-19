@@ -55,7 +55,10 @@ class LeclercSpider(scrapy.Spider):
 
     def get_description(self, response):
         items = response.css('#brandbank_opis > *').getall()
-        textmatch = [item for item in items if item.startswith('<h3>')][1]
+        textmatch = [item for item in items if item.startswith('<h3>')]
+        if len(textmatch) < 2:
+            return ''
+        textmatch = textmatch[1]
         textmatch = textmatch[4:-5]
         texts = response.css('#brandbank_opis > *::text').getall()
         return ' '.join(texts[1:texts.index(textmatch)])
