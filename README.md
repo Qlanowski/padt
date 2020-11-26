@@ -6,5 +6,7 @@
 Leclerc:
 - pip install scrapy
 - uruchamia sie poprzez wejscie do folderu grocery_scraper i wklepanie do konsoli 
-- scrapy crawl leclerc  -a category=<kategoria>
+- scrapy crawl <strona>  -a category=<kategoria>
+- dostępne opcje <strona>: carrefour oraz leclerc
+- jeżeli nazwa kategorii składa się z więcej niż jednego słowa, należy zamknąć ją w cudzysłowach (")
 - jak chce sie output do jsona albo csv to opcja dodatkowa -o plik.json/csv 

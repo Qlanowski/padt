@@ -6,7 +6,12 @@ class LeclercSpider(scrapy.Spider):
     name = "leclerc"
     _base_url = 'https://www.leclerc.rzeszow.pl'
     _category_url = ''
-    
+    custom_settings = {
+        'ITEM_PIPELINES': {
+            'grocery_scraper.pipelines.LeclercScraperPipeline': 300,
+        }
+    }
+
     def __init__(self, category='', **kwargs):
         self._category = category
         self.start_urls = [self._base_url]  # py36
@@ -32,15 +37,18 @@ class LeclercSpider(scrapy.Spider):
         item['price'] = response.css('.cena::text').get(default='')
         item['ean'] = response.css('.Ean::text').get(default='')
         item['title'] = response.css('.prod_right h1::text').get(default='')
-        item['photo_url'] = response.css('.thumbnail img::attr(src)').get(default='')
+        item['photo_url'] =  self._base_url + response.css('.thumbnail img::attr(src)').get(default='')
         item['price_before_discount'] = response.css('.cena_taniej::text').get(default='')
         item['price_per_quantity'] = response.css('.price_ilosc::text').get(default='')
-        item['category'] = response.css('.breadcrumps span::text').getall()[-1]
+        item['category'] = response.css('.breadcrumps span::text').getall()[1:]
         item['packaging'] = self.get_packaging(response)
         item['nutrition'] = self.get_nutrition_table(response)
         item['features'] = self.get_features(response)
         item['ingredients'] = self.get_ingredients(response)
+        item['chemicals'] = self.get_chemicals(response)
         item['description'] = self.get_description(response)
+        item['url'] = response.url
+        item['storage'] = self.get_storage(response)
 
         return item
 
@@ -63,11 +71,32 @@ class LeclercSpider(scrapy.Spider):
         texts = response.css('#brandbank_opis > *::text').getall()
         return ' '.join(texts[1:texts.index(textmatch)])
 
+    def get_storage(self, response):
+        storage_header = 'Przechowywanie'
+        items = response.css('#brandbank_opis > *').getall()
+        headers = [item[4:-5] for item in items if item.startswith('<h3>')]
+        if storage_header not in headers:
+            return ''
+        texts = response.css('#brandbank_opis > *::text').getall()
+        storage_texts_index = texts.index(storage_header)
+        storage_headers_index = headers.index(storage_header)
+
+        texts_final = []
+        if storage_headers_index == len(headers) - 1:
+            texts_final = texts[storage_texts_index+1:]
+        else:
+            other_header = headers[storage_headers_index + 1]
+            texts_final = texts[storage_texts_index+1:texts.index(other_header)] 
+
+        return ' '.join(texts_final)
+
     def get_ingredients(self, response):
-        ingredients_chemicals = response.css('.skladniki li::text').getall()
         ingredients_base = response.css('.skladniki_left li::text').getall()
-        ingredients = ingredients_base + ingredients_chemicals
-        return ingredients if len(ingredients) > 0 else None
+        return ingredients_base if len(ingredients_base) > 0 else None
+
+    def get_chemicals(self, response):
+        ingredients_chemicals = response.css('.skladniki li::text').getall()
+        return ingredients_chemicals if len(ingredients_chemicals) > 0 else None
 
 
     def get_features(self, response):
